@@ -1,3 +1,4 @@
+
 #------------------------------------------------------------------------
 # Part of InstaCrawlR
 # Git Hub: https://github.com/JonasSchroeder/InstaCrawlR
@@ -16,7 +17,7 @@ library(utf8)
 #---------------------------------------------------------
 #Download JSON File from Instagram for a specific Hashtag
 #---------------------------------------------------------
-hashtag <- "sponsored"
+hashtag <- "sponsored" #ここに調べたいハッシュタグを入れる
 url_start <- str_glue("http://instagram.com/explore/tags/{hashtag}/?__a=1")
 json <- fromJSON(url_start)
 edge_hashtag_to_media <- json$graphql$hashtag$edge_hashtag_to_media
@@ -57,7 +58,7 @@ extractInfo <- function(index){
                 temp <- posts$edge_media_to_caption$edges[[i]][["node"]][["text"]]
                 post_text[index] <- gsub("\n", " ", temp)
             }
-            
+
             post_id_temp <- posts[i,5]
             post_url[index] <-  str_glue("http://instagram.com/p/{post_id_temp}")
             post_id[index] <- post_id_temp
@@ -65,12 +66,14 @@ extractInfo <- function(index){
             post_img_url[index] <- posts[i,9]
             post_likes[index] <- posts[i,11]
             post_owner[index] <- posts[i,12]
-            
+
             #optional: download image
             #img_dir <- str_glue("images/{index}_{hashtag}_post_img.jpg")
             #download.file(posts[i,8], img_dir, mode = 'wb')
-            
+
             index <- index + 1
+            #手動でコードを止める設定なので
+            #自動で止めたい場合はstop()を入れる
         }
     }    
 }
@@ -94,17 +97,3 @@ getNewPosts <- function(index){
 
 #Start the Madness
 extractInfo(index)
-
-#-----------------------------
-#Export Dataframe to CSV()
-#-----------------------------
-table <- do.call(rbind.data.frame, Map('c', post_id, post_url, post_img_url, post_likes, post_owner, post_text, post_time))
-colnames(table) <- c("ID", "Post_URL", "Img_URL", "Likes", "Owner", "Text", "Date")
-time <- Sys.time()
-filename <- str_glue("table-{hashtag}-{time}.csv")
-write.csv(table, filename, fileEncoding = "UTF-8")
-
-
-#May run first to set TZ
-Sys.setenv(TZ="Europe/Berlin")
-Sys.getenv("TZ")
